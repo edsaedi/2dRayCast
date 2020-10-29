@@ -35,7 +35,7 @@ namespace _2dRayCast
 
         public void DrawLine(Line line)
         {
-            gfx.DrawLine(Pens.White, line.x1, line.y1, line.x2, line.y2);
+            gfx.DrawLine(Pens.White, line.startPoint.X, line.startPoint.Y, line.endPoint.X, line.endPoint.Y);
         }
 
         public void BarrierCreator(int barrierCount)
@@ -48,7 +48,6 @@ namespace _2dRayCast
                 int y2 = rand.Next(0, canvas.Height);
 
                 Line line = new Line(x1, x2, y1, y2);
-                DrawLine(line);
                 barriers.Add(line);
                 //Draw all of my lines
                 //Make sure that you have all the information
@@ -61,7 +60,15 @@ namespace _2dRayCast
             canvas = new Bitmap(pictureBox1.Width, pictureBox1.Height);
 
             gfx = Graphics.FromImage(canvas);
+            BarrierCreator(5);
+        }
 
+        public void BarrierDraw()
+        {
+            foreach (var barrier in barriers)
+            {
+                DrawLine(barrier);
+            }
         }
 
         //This is the logic created for the lamp drawing.
@@ -78,7 +85,7 @@ namespace _2dRayCast
         {
             gfx.Clear(Color.Black);
 
-            BarrierCreator(5);
+            BarrierDraw();
 
             pictureBox1.Image = canvas;
 
