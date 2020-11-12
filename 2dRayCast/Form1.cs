@@ -17,6 +17,7 @@ namespace _2dRayCast
         Bitmap canvas;
         Random rand = new Random(26);
         List<Line> barriers = new List<Line>();
+        double RConstant = 5000;
 
         //Finds the mouse coordinates relative to the picturebox.
         Point mouse => pictureBox1.PointToClient(Cursor.Position);
@@ -71,11 +72,59 @@ namespace _2dRayCast
             }
         }
 
+        public double DistanceFormula(Point start, Point end)
+        {
+            double x2 = (start.X ^ 2) * (end.X ^ 2);
+            double y2 = (start.Y ^ 2) * (end.Y ^ 2);
+            return Math.Sqrt(x2 + y2);
+        }
+
+        public double DistanceFormula(int distanceX, int distanceY)
+        {
+            double x2 = distanceX ^ 2;
+            double y2 = distanceY ^ 2;
+            return Math.Sqrt(x2 + y2);
+        }
+
+        public bool DoesIntersect(Line line)
+        {
+            bool intersects = false;
+            Point tempEndPoint = default;
+            foreach (var barrier in barriers)
+            {
+                if (line.Intersection(line, barrier, out Point intersection))
+                //if (line.LineIntersection(line, barrier, out Point intersection))
+                {
+                    intersects = true;
+
+                    if(tempEndPoint == default)
+                    {
+                        tempEndPoint = intersection;
+                    }
+                    //else if(DistanceFormula(tempEndPoint.))
+                    
+                    line.endPoint = intersection;
+                }
+            }
+            return intersects;
+        }
+
         //This is the logic created for the lamp drawing.
         public void Lamp(Point mouse, int angleDifference)
         {
-            for (int i = 0; i < 2 * Math.PI; i += angleDifference)
+            for (double i = 0; i < 2 * Math.PI; i += ((2 * Math.PI) / angleDifference))
             {
+                var tempPosX = (int)(Math.Cos(i) * RConstant);
+                var tempPosY = (int)(Math.Sin(i) * RConstant);
+                Line line = new Line(mouse.X, mouse.Y, mouse.X + tempPosX, mouse.Y + tempPosY);
+                if (DoesIntersect(line))
+                {
+                    gfx.DrawLine(Pens.Red, line.startPoint, line.endPoint);
+                }
+                else
+                {
+                    DrawLine(line);
+                }
                 //I need to find a way to draw all of the different lines.
                 // On top of that I need to find a way to determine its final coordinates.
             }
@@ -86,6 +135,7 @@ namespace _2dRayCast
             gfx.Clear(Color.Black);
 
             BarrierDraw();
+            Lamp(mouse, 100);
 
             pictureBox1.Image = canvas;
 

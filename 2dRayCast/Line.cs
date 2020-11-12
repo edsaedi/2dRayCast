@@ -21,8 +21,8 @@ namespace _2dRayCast
         {
             startPoint.X = x1;
             endPoint.X = x2;
-            startPoint.X = y1;
-            endPoint.X = y2;
+            startPoint.Y = y1;
+            endPoint.Y = y2;
         }
 
         public Line(Point StartPoint, Point EndPoint)
@@ -31,31 +31,64 @@ namespace _2dRayCast
             this.endPoint = EndPoint;
         }
 
-        public bool Intersection(Line other, out Point intersectionPoint)
+        // Found at https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+        public bool LineIntersection(Line ray, Line barrier, out Point intersectionPoint)
         {
-            double tNumerator = ((startPoint.X - other.startPoint.X) * (other.startPoint.Y - other.endPoint.Y)) - ((startPoint.Y - other.startPoint.Y) * (other.startPoint.X - other.endPoint.X));
-            double uNumerator = -1 * (((startPoint.X - endPoint.X) * (startPoint.Y - other.startPoint.Y)) - ((startPoint.Y - endPoint.Y) * (startPoint.X - other.startPoint.X)));
-            double Denomenator = (((startPoint.X - endPoint.Y) * (other.startPoint.Y - other.endPoint.Y)) - ((startPoint.Y - endPoint.Y) * (other.startPoint.X - other.endPoint.X)));
+            intersectionPoint = default;
+            int den = ((ray.startPoint.X - ray.endPoint.X) * (barrier.startPoint.Y - barrier.endPoint.Y)) - ((ray.startPoint.Y - ray.endPoint.Y) * (barrier.startPoint.X - barrier.endPoint.X));
+            float t = ((ray.startPoint.X - barrier.startPoint.X) * (barrier.startPoint.Y - barrier.endPoint.Y)) - ((ray.startPoint.Y - barrier.startPoint.Y) * (barrier.startPoint.X - barrier.endPoint.X));
+            float u = ((ray.startPoint.X - ray.endPoint.X) * (ray.startPoint.Y - barrier.startPoint.Y)) - ((ray.startPoint.Y - ray.endPoint.Y) * (ray.startPoint.X - barrier.startPoint.X));
 
-            if (Denomenator == 0)
+            if (den == 0)
             {
-                intersectionPoint = default;
                 return false;
             }
 
-            double t = tNumerator / Denomenator;
-            double u = uNumerator / Denomenator;
+            t /= den;
+            u /= -den;
 
-            if (t <= 1 && t >= 0 && u <= 1 && u >= 0)
+            if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
             {
-                var tempX = (int)(startPoint.X + (t * (endPoint.X - startPoint.X)));
-                var tempY = (int)(startPoint.Y + (t * (endPoint.Y - startPoint.Y)));
+                intersectionPoint.X = (int)(ray.startPoint.X + (t * (ray.endPoint.X - ray.startPoint.X)));
+                intersectionPoint.Y = (int)(ray.startPoint.Y + (t * (ray.endPoint.Y - ray.startPoint.Y)));
+                return true;
+            }
+            return false;
+        }
 
-                intersectionPoint = new Point(tempX, tempY);
+
+        public bool Intersection(Line ray, Line barrier, out Point intersectionPoint)
+        {
+            intersectionPoint = default;
+            //int den = ((ray.startPoint.X - ray.endPoint.X) * (barrier.startPoint.Y - barrier.endPoint.Y)) - ((ray.startPoint.Y - ray.endPoint.Y) * (barrier.startPoint.X - barrier.endPoint.X));
+            int den = ((ray.startPoint.X - ray.endPoint.X) * (barrier.startPoint.Y - barrier.endPoint.Y)) - ((ray.startPoint.Y - ray.endPoint.Y) * (barrier.startPoint.X - barrier.endPoint.X));
+
+            //float t = ((ray.startPoint.X - barrier.startPoint.X) * (barrier.startPoint.Y - barrier.endPoint.Y)) - ((ray.startPoint.Y - barrier.startPoint.Y) * (barrier.startPoint.X - barrier.endPoint.X));
+            double tNumerator = ((ray.startPoint.X - barrier.startPoint.X) * (barrier.startPoint.Y - barrier.endPoint.Y)) - ((ray.startPoint.Y - barrier.startPoint.Y) * (barrier.startPoint.X - barrier.endPoint.X));
+
+            //float u = ((ray.startPoint.X - ray.endPoint.X) * (ray.startPoint.Y - barrier.startPoint.Y)) - ((ray.startPoint.Y - ray.endPoint.Y) * (ray.startPoint.X - barrier.startPoint.X));
+            double uNumerator = ((ray.startPoint.X - ray.endPoint.X) * (ray.startPoint.Y - barrier.startPoint.Y)) - ((ray.startPoint.Y - ray.endPoint.Y) * (ray.startPoint.X - barrier.startPoint.X));
+
+            //if (Denomenator == 0)
+            if(den == 0)
+            {
+                return false;
+            }
+
+            //double t = tNumerator / Denomenator;
+            tNumerator /= den;
+            uNumerator /= -den;
+            //double u = uNumerator / -Denomenator;
+
+            //if (t <= 1 && t >= 0 && u <= 1 && u >= 0)
+            if (tNumerator >= 0 && tNumerator <= 1 && uNumerator >= 0 && uNumerator <= 1)
+            {
+                intersectionPoint.X =  (int)(ray.startPoint.X + (tNumerator * (ray.endPoint.X - ray.startPoint.X)));
+                intersectionPoint.Y = (int)(ray.startPoint.Y + (tNumerator * (ray.endPoint.Y - ray.startPoint.Y)));
+
                 return true;
             }
 
-            intersectionPoint = default;
             return false;
         }
     }
